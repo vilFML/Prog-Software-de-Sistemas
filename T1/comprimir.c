@@ -27,22 +27,21 @@ uint comprimir(uint a[], int nbits) {
     k++;                                                                        //cabe 1 mas
     bits_aReservar += nbits;
   }
-  printf("Caben %i numeros\n", k);
-
+  if (k == 0){
+    
+  }
 
   /* II.  Ingresar los k numeros extraidos en el uint
    */
   uint res = 0;                                                                 //uint final
   
   int bits_extrs = 0;                                                           //para almacenar extraidos
-  int masc = ~(1<<nbits);                                                       //crear mascara segun cant de bits a extraer
+  int masc = ~(-1<<nbits);                                                      //crear mascara segun cant de bits a extraer
 
   for (int i=0; i<k; i++){                                                      //i lleva la cuenta de nros ingresados
     
     bits_extrs = a[i] & masc;                                                   //extraer nbits de a[i] con mascara
-    res = res | (bits_extrs << (i*nbits) );                                     //unir bits en pos segun ciclo
+    res = res | (bits_extrs << (i*nbits));                                      //unir bits en pos segun #ciclo
   }
-
-  printf("TEST: resultado: %u\n", res);
   return res;
 }
