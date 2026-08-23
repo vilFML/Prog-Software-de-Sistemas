@@ -15,33 +15,36 @@ se repite #veces = cant de nros que quepan
 #include "comprimir.h"
 
 uint comprimir(uint a[], int nbits) { 
-  /*  I.  Obtener capacidad en uint destino
-  */  
   int cap_uint = sizeof(uint) << 3;                                             //obtener capacidad de destino
 
-  //tener cuantos caben: contar cuantas veces cabe nbits en cap_uint
-  int k = 0;                                                                    //cantidad de nros que caben
-  int bits_aReservar = nbits;                                                   //para ir contando bits usados del uint
-    
-  while(bits_aReservar <= cap_uint){
-    k++;                                                                        //cabe 1 mas
-    bits_aReservar += nbits;
-  }
-  if (k == 0){
-    
-  }
+  if (nbits >= cap_uint){               //si nbits excede cap: solo truncar
 
-  /* II.  Ingresar los k numeros extraidos en el uint
-   */
-  uint res = 0;                                                                 //uint final
+    int mask = (unsigned int)-1 >> (32-nbits);
+    return (a[0] & mask);
+  }
   
-  int bits_extrs = 0;                                                           //para almacenar extraidos
-  int masc = ~(-1<<nbits);                                                      //crear mascara segun cant de bits a extraer
+  else{
+    //tener cuantos caben: contar cuantas veces cabe nbits en cap_uint
+    int k = 0;                                                                  //guardar nros que caben
+    int bits_aReservar = nbits;                                                 //aux: ir contando bits usados
+      
+    while(bits_aReservar <= cap_uint){
+      k++;                                                                      //cabe 1 mas
+      bits_aReservar += nbits;
+    }
 
-  for (int i=0; i<k; i++){                                                      //i lleva la cuenta de nros ingresados
+    /* Ingresar los k numeros extraidos en el uint */
+    uint res = 0;                                                               //uint final
     
-    bits_extrs = a[i] & masc;                                                   //extraer nbits de a[i] con mascara
-    res = res | (bits_extrs << (i*nbits));                                      //unir bits en pos segun #ciclo
+    uint bits_extrs = 0;                                                        //para almacenar extraidos
+    int mask = (unsigned int)-1 >> (32-nbits);                                  //crear mascara
+
+    //para cada nro en arreglo
+    for (int i=0; i<k; i++){                                                    //i lleva la cuenta de nros ingresados
+      
+      bits_extrs = a[i] & mask;                                                 //extraer nbits de a[i] con mascara
+      res = (res << nbits) | bits_extrs;                                        //unir bits en pos segun #ciclo
+    }
+    return res;
   }
-  return res;
 }
