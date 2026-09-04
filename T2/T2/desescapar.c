@@ -9,31 +9,47 @@
  *  por ej \n -> 0x0A
  */
 void desescapar(char *s) {
-  /* Idea:
-    crear ptero aux
-    Mientras s no apunte a 0:      
-      si apunta a '\'
-      aux apunta a sig
-        si aux apunta a n:
-          cambiar apuntado por s = 0x0A
-        si auz apunta a t:
-          cambiar apuntado por s = 0x09
-        si aux apunta a \
-          cambiar pauntado pos s = 0x5C
-        si aux apunta a "
-          cambiar apuntado por s = 0x22
-        si aux apunta a x:
-          pasar sig char a bytes
-          pasar subsig char a byte
-          combinar
-          ingresar en casilla apuntada por s
-      si no es '\':
-        avanzar s a sig caracter
-    
-    fuera de while: agregar 0x00 en s
 
-    retornar
-    */
+  char *cab = s;                        //ptero aux apunta al mismo 1er char
+  
+  while (*cab != '\0'){                     //mientras no sea el fin del str
+
+    if (*cab != 0x5C){                  //se ve backslash
+      cab++;                              //avanzar a sig caracter
+    }
+  
+    else{                               //caso backslash
+      char *sig = cab;
+      sig++;                            //ptero a sig caracter
+      
+      //casos segun sig
+      if (*sig == 't'){
+        *cab = 0x09;                    //backslash inicial -> char
+      }
+      else if (*sig == 'n'){
+        *cab = 0x0A;
+      }
+      else if (*sig == 0x5C){
+        *cab = 0x5C;
+      }
+      else if (*sig == 0x22){
+        *cab = 0x22;
+      }
+      else if (*sig == 'x'){            //caso xhh
+        sig++;                          //ver h1
+        unsigned char h1 = *sig;
+        sig++;
+        unsigned char h2 = *sig;        //ver h2
+
+        unsigned char resultado = (h1 << 4) | h2;                               //unir ambos
+
+        *cab = resultado;
+      }    
+    }
+    cab++;
+  }
+  *cab = '\0'
+  return;
 }
 
 /* 
