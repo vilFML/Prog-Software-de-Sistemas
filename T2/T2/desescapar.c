@@ -10,32 +10,51 @@
  */
 void desescapar(char *s) {
 
-  char *cab = s;                        //ptero aux apunta al mismo 1er char
+  char *lec = s;
+  char *esc = s;
   
-  while (*cab != '\0'){                     //mientras no sea el fin del str
+  while (*lec != '\0'){                     //mientras no sea el fin del str
 
-    if (*cab != 0x5C){                  //se ve backslash
-      cab++;                              //avanzar a sig caracter
+    if (*lec != '\\'){                  //no backslash
+      //avanzar a sig caracter
+      *esc = *lec;
+      esc++;
+      lec++;
     }
   
     else{                               //caso backslash
-      char *sig = cab;
+      char *sig = lec;
       sig++;                            //ptero a sig caracter
       
       //casos segun sig
-      if (*sig == 't'){
-        *cab = 0x09;                    //backslash inicial -> char
+      if (*sig == '\0'){                //secuencia incompleta
+        lec++;                            //saltar
+      }
+
+      else if (*sig == 't'){
+        *esc = 0x09;
+        esc++;
+        lec += 2;
       }
       else if (*sig == 'n'){
-        *cab = 0x0A;
+        *esc = 0x0A
+        esc++;
+        lec += 2;
       }
-      else if (*sig == 0x5C){
-        *cab = 0x5C;
+      else if (*sig == '\\'){
+        *esc = 0x5C;
+        esc++;
+        lec += 2;
       }
-      else if (*sig == 0x22){
-        *cab = 0x22;
+      else if (*sig == '"'){
+        *esc = 0x22;
+        esc++;
+        lec += 2;
       }
       else if (*sig == 'x'){            //caso xhh
+        //TODO
+
+
         sig++;                          //ver h1
         unsigned char h1 = *sig;
         sig++;
@@ -43,12 +62,12 @@ void desescapar(char *s) {
 
         unsigned char resultado = (h1 << 4) | h2;                               //unir ambos
 
-        *cab = resultado;
+        *lec = resultado;
       }    
     }
-    cab++;
+    lec++;
   }
-  *cab = '\0'
+  *lec = '\0'
   return;
 }
 
