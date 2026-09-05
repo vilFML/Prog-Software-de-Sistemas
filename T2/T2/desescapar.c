@@ -5,9 +5,7 @@
 #include "desescapar.h"
 
 /* auxiliar, devuelve val numérico de char */
-int char_a_int(char *c){
-  *c = int(*c);                         //tener nro explicitamente
-
+int char_a_int(char c){
   if (c >= '0' && c <= '9'){            //caso num
     return c - '0';                     //distancia al 0
   }
@@ -73,17 +71,47 @@ void desescapar(char *s) {
         lec += 2;
       }
       else if (*sig == 'x'){            //caso xhh
+        char *h1p = sig;
+        h1p++;
+        
         //se tienen casos para chars
-        sig++;                          //ver h1
-        int h1 = char_a_int(*sig);
-        sig++;
-        int h2 = char_a_int(*sig);
+        if (*h1p == '\0'){              //fin str
+          lec++;
+        }
+        else{
+          int h1 = char_a_int(*sig);    //analizar 1er char
+          
+          //hex invalido
+          if (h1 == -1){
+            lec++;                      //saltar backslash
+          }
+          //hex valido: ver segundo
+          else{
+            char *h2p = h1p;
+            h2p++;
+            if(*h2p == '\0'){           //fin str
+                lec++;
+              }
+            }
+            else{
+              int h2 = char_a_int(*h2p);
+              if(h2 == -1){             //segundo invalido
+                lec++;
+              }
+              else{ //ambos validos: unir
+                unsigned char resultado = [(unsigned char)((h1 << 4) | h2)];
+                *esc = (char)resultado;
 
-        unsigned char resultado = (h1 << 4) | h2;                               //unir ambos
-
-        *esc = resultado;
-        esc++;
-      }    
+                esc++;
+                lec+=4;                 //saltar a sigs
+              }
+            }
+          }
+        }
+      }
+      else{                             //fuera de tabla: saltar backslash
+        lec++;
+      }
     }
   }
   *lec = '\0';
