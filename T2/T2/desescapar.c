@@ -10,8 +10,8 @@
  */
 void desescapar(char *s) {
 
-  char *lec = s;
-  char *esc = s;
+  char *lec = s;                        //ptero solo lectura
+  char *esc = s;                        //pt escritura
   
   while (*lec != '\0'){                     //mientras no sea el fin del str
 
@@ -31,6 +31,7 @@ void desescapar(char *s) {
         lec++;                            //saltar
       }
 
+      //casos reemplazo
       else if (*sig == 't'){
         *esc = 0x09;
         esc++;
