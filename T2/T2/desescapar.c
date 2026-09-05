@@ -4,6 +4,26 @@
 
 #include "desescapar.h"
 
+/* auxiliar, devuelve val numérico de char */
+int char_a_int(char *c){
+  *c = int(*c);                         //tener nro explicitamente
+
+  if (c >= '0' && c <= '9'){            //caso num
+    return c - '0';                     //distancia al 0
+  }
+
+  //casos letras
+  else if (c >= 'A' && c <= 'F'){
+    return (c - 'A') + 10;              //distancia a 'A' mas nros
+  }
+  else if (c >= 'a' && c <= 'f'){       //caso minuscula
+    return (c - 'a') + 10;
+  }
+
+  else{//hex invalido
+    return -1;
+  }
+}
 
 /* fn reemplaza cada secuencia de escape por el byte que representa
  *  por ej \n -> 0x0A
@@ -13,7 +33,7 @@ void desescapar(char *s) {
   char *lec = s;                        //ptero solo lectura
   char *esc = s;                        //pt escritura
   
-  while (*lec != '\0'){                     //mientras no sea el fin del str
+  while (*lec != '\0'){                 //mientras no sea el fin del str
 
     if (*lec != '\\'){                  //no backslash
       //avanzar a sig caracter
@@ -33,12 +53,12 @@ void desescapar(char *s) {
 
       //casos reemplazo
       else if (*sig == 't'){
-        *esc = 0x09;
-        esc++;
-        lec += 2;
+        *esc = 0x09;                    //reemplazar x secuencia
+        esc++;                          //pasar a sig casilla
+        lec += 2;                       //saltar secuencia
       }
       else if (*sig == 'n'){
-        *esc = 0x0A
+        *esc = 0x0A;
         esc++;
         lec += 2;
       }
@@ -53,22 +73,20 @@ void desescapar(char *s) {
         lec += 2;
       }
       else if (*sig == 'x'){            //caso xhh
-        //TODO
-
-
+        //se tienen casos para chars
         sig++;                          //ver h1
-        unsigned char h1 = *sig;
+        int h1 = char_a_int(*sig);
         sig++;
-        unsigned char h2 = *sig;        //ver h2
+        int h2 = char_a_int(*sig);
 
         unsigned char resultado = (h1 << 4) | h2;                               //unir ambos
 
-        *lec = resultado;
+        *esc = resultado;
+        esc++;
       }    
     }
-    lec++;
   }
-  *lec = '\0'
+  *lec = '\0';
   return;
 }
 
