@@ -8,7 +8,7 @@
 int main(int argc, char *argv[]) {
   //Error cantidad incorrecta de entradas
   if (argc!=4) {
-    fprintf(stderr, "Uso: ./definir <diccionario> <key> <definicion>\n");
+    fprintf(stderr, "Uso: ./definir <diccionario> <llave> <definicion>\n");
     exit(1);
   }
 
@@ -21,8 +21,6 @@ int main(int argc, char *argv[]) {
   //get sizes
   size_t tam = strlen(key);
   size_t tamval = strlen(val);
-  
-                                        //int tam = strlen(key);
 
   //manage info exceeds maximum 100B
   if (tam + tamval > 99){
@@ -41,7 +39,7 @@ int main(int argc, char *argv[]) {
   }
 
 
-  /* I. Get amount of rows in the table */
+  //Get amount of rows in the table
   int seekres = fseek(f, 0, SEEK_END);
   if (seekres != 0){
     printf("Error de fseek\n");
@@ -52,7 +50,7 @@ int main(int argc, char *argv[]) {
   int rows = bytesF / 100;
 
 
-  /* II. Try writing key and val at row = hash_string(key) % rows */
+  //Try writing key and val at row = hash_string(key) % rows
   int row = hash_string(key) % rows;                                            //row to add at
 
   //start file cycle
@@ -110,10 +108,9 @@ int main(int argc, char *argv[]) {
         fclose(f);
         exit(1);
       }
-    
+    }
   }// otherwise: the next iteration seeks to the next row
   fclose(f);
   fprintf(stderr, "%s: el diccionario esta lleno\n", filename);
   exit(1);
-  }
 }
