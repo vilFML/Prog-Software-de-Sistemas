@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
   FILE *f = fopen(filename, "rb+");
   //manage open error
   if (f==NULL){
-    printf("Error en apertura de archivo.\n");
     perror(filename);
     exit(1);
   }
@@ -42,11 +41,16 @@ int main(int argc, char *argv[]) {
   //Get amount of rows in the table
   int seekres = fseek(f, 0, SEEK_END);
   if (seekres != 0){
-    printf("Error de fseek\n");
     perror(filename);
     exit(1);
   }
   int bytesF = ftell(f);
+  if(bytesF == 0){                      //empty dictionary
+    perror(filename);
+    exit(1);
+  }
+
+
   int rows = bytesF / 100;
 
 
