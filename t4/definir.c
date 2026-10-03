@@ -8,56 +8,112 @@
 int main(int argc, char *argv[]) {
   //Error cantidad incorrecta de entradas
   if (argc!=4) {
-    fprintf(stderr, "Uso: ./definir <diccionario> <llave> <definicion>\n");
+    fprintf(stderr, "Uso: ./definir <diccionario> <key> <definicion>\n");
     exit(1);
   }
 
-  //previo
-  //almacenar entradas
-  char *nombre_dicc = argv[1];
-  char *llave = argv[2];
-  char *valor = argv[3];
+  //preprocess
+  //store input
+  char *filename = argv[1];
+  char *key = argv[2];
+  char *val = argv[3];
 
-  //tener tamaño de llave
-  int tam = strlen(llave);
+  //get sizes
+  size_t tam = strlen(key);
+  size_t tamval = strlen(val);
+  
+                                        //int tam = strlen(key);
 
-  //abrir archivo
-  FILE *f = fopen(filename, 'wb');
-  //manejo de error de apertura
+  //manage info exceeds maximum 100B
+  if (tam + tamval > 99){
+    fprintf(stderr, "Tamanno de la llave mas tamanno de la definicion (%d) "
+            "exceden maximo permitido (%d)\n", (int)(tam + tamval), 99);
+    exit(1);
+  }
+
+  //open file
+  FILE *f = fopen(filename, "rb+");
+  //manage open error
   if (f==NULL){
     printf("Error en apertura de archivo.\n");
-    perror(nombre_dicc);
+    perror(filename);
     exit(1);
   }
 
 
-  // 1.calcular cantidad de filas en la tabla con fseek y ftell
-  fseek(f, 0, SEEK_END);
+  /* I. Get amount of rows in the table */
+  int seekres = fseek(f, 0, SEEK_END);
+  if (seekres != 0){
+    printf("Error de fseek\n");
+    perror(filename);
+    exit(1);
+  }
   int bytesF = ftell(f);
-  int lineas = bytesF / 100;
+  int rows = bytesF / 100;
 
-  // 2.intentar agregar llave y valor en fila = hash_string(llave) % cant_filas
-  int filaAgregar = hash_string(llave) % cant_filas;                            //fila en donde agregar
-  fseek(f, filaAgregar, SEEK_SET);                                              //moverse a tal fila
 
-  //revisar si hay tam==0 en esa posición: leer
-  int tam_archivo
-  fread(&tam_archivo, 4, 1, f);
-  if (tam_archivo == 0){                //espacio disponible
+  /* II. Try writing key and val at row = hash_string(key) % rows */
+  int row = hash_string(key) % rows;                                            //row to add at
 
-    //intentar agregar elementos, uno por uno
-    size_t escritosTam = fwrite(tam, 4, 1, f);
-    size_t escritosLlave = fwrite(llave, tam, strlen(llave), f);
-    size_t escritosValor = fwrite(valor, 99-tam, strlen(valor), f);
+  //start file cycle
+  for (int i = 0; i < rows; i++){
+    
+    int j = (row + i) % rows;                                                   //for cycle
 
-    //manejo de error de escritura, si se escribio menos de lo esperado: Error
-  if (escritosTam != 1 || escritosLlave != strlen(llave) || escritosValor != strlen(valor)){
-    printf("Error en la escritura de archivo\n")
-    perror(fwrite);
-    exit(1);
+    seekres = fseek(f, j*100, SEEK_SET);                                        //move to row
+    if (seekres != 0){
+      printf("Error de fseek\n");
+      perror(filename);
+      exit(1);
+    }
+
+    unsigned char t;
+    int readres = fread(&t, 1, 1, f);
+    if (readres != 1){                  //manage fread error
+      perror(filename);
+      exit(1);
+    }
+
+    //empty row found
+    if (t == 0) {
+      char fila[100];
+      fila[0] = (unsigned char)tam;
+      for (size_t k = 0; k < tam; k++)       // key
+        fila[1 + k] = key[k];
+      for (size_t k = 0; k < tamval; k++)    // definition
+        fila[1 + tam + k] = val[k];
+      for (size_t k = 1 + tam + tamval; k < 100; k++)  // pad with spaces
+        fila[k] = ' ';
+
+      if (fseek(f, j * 100, SEEK_SET) != 0 ||
+          fwrite(fila, 100, 1, f) != 1 ||
+          fclose(f) != 0) {
+        perror(filename);
+        exit(1);
+      }
+      return 0;
+    }
+
+    //found same size: check key
+    if (t == tam) {
+      char keyf[100];
+      
+      readres = fread(keyf, 1, tam, f);
+      if (readres != tam){              //read error
+        perror(filename);
+        exit(1);
+      }
+      keyf[tam] = 0;
+
+      if (strcmp(key, keyf) == 0) {     //key coincidence
+        fprintf(stderr, "La llave %s ya se encuentra en el diccionario\n", key);
+        fclose(f);
+        exit(1);
+      }
+    
+  }// otherwise: the next iteration seeks to the next row
+  fclose(f);
+  fprintf(stderr, "%s: el diccionario esta lleno\n", filename);
+  exit(1);
   }
-
-
-
-
 }
